@@ -44,7 +44,7 @@ def login():
         mobile = request.form['mobile']
         password = request.form['password']
 
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('/tmp/users.db')
         cur = conn.cursor()
         cur.execute("SELECT * FROM users WHERE mobile=? AND password=?", (mobile, password))
         user = cur.fetchone()
@@ -72,6 +72,6 @@ def logout():
     return redirect('/')
 
 
-# ✅ ALWAYS KEEP THIS AT LAST
+
 if __name__ == '__main__':
     app.run(debug=True)
