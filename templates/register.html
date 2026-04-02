@@ -3,16 +3,66 @@
 <head>
     <title>Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script>
+        function formatMobile(input) {
+            input.value = input.value.replace(/[^0-9]/g, '').slice(0,10);
+        }
+
+        function validateForm() {
+            let mobile = document.getElementById("mobile").value;
+            let password = document.getElementById("password").value;
+
+            if (mobile.length !== 10) {
+                alert("Mobile number must be 10 digits ❌");
+                return false;
+            }
+
+            if (password.length < 4) {
+                alert("Password must be at least 4 characters ❌");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
 </head>
 <body>
+
 <div class="container">
-    <h2>Register</h2>
-    <form method="POST">
-        <input type="text" name="mobile" placeholder="Mobile Number" required>
-        <input type="password" name="password" placeholder="Password" required>
+
+    <h2>📝 Register</h2>
+
+    <form method="POST" onsubmit="return validateForm()">
+
+        <input 
+            type="text" 
+            id="mobile"
+            name="mobile" 
+            placeholder="Enter Mobile Number"
+            maxlength="10"
+            oninput="formatMobile(this)"
+            required>
+
+        <!-- ✅ FIXED PASSWORD INPUT -->
+        <input 
+            type="password" 
+            id="password"
+            name="password" 
+            placeholder="Enter Password"
+            required>
+
         <button type="submit">Register</button>
     </form>
-    <a href="/">Back to Login</a>
+
+    <!-- ✅ MESSAGE -->
+    {% if message %}
+        <p class="error">{{ message }}</p>
+    {% endif %}
+
+    <a href="/" class="link">Back to Login</a>
+
 </div>
+
 </body>
 </html>

@@ -3,17 +3,59 @@
 <head>
     <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script>
+        // ✅ Auto-format mobile number
+        function formatMobile(input) {
+            input.value = input.value.replace(/[^0-9]/g, '').slice(0,10);
+        }
+
+        // ✅ Validate before submit
+        function validateForm() {
+            let mobile = document.getElementById("mobile").value;
+
+            if (mobile.length !== 10) {
+                alert("Mobile number must be 10 digits ❌");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
+
 <div class="container">
-    <h2>Login</h2>
-    <form method="POST">
-        <input type="text" name="mobile" placeholder="Mobile Number" required>
-        <input type="password" name="password" placeholder="Password" required>
+
+    <h2>🔐 Login</h2>
+
+    <form method="POST" onsubmit="return validateForm()">
+
+        <input 
+            type="text" 
+            id="mobile"
+            name="mobile" 
+            placeholder="Enter Mobile Number"
+            oninput="formatMobile(this)"
+            maxlength="10"
+            required>
+
+        <input 
+            type="password" 
+            name="password" 
+            placeholder="Enter Password" 
+            required>
+
         <button type="submit">Login</button>
     </form>
-    <p>{{ message }}</p>
-    <a href="/register">Create Account</a>
+
+    <!-- ✅ MESSAGE DISPLAY -->
+    {% if message %}
+        <p class="error">{{ message }}</p>
+    {% endif %}
+
+    <a href="/register" class="link">Create Account</a>
+
 </div>
+
 </body>
 </html>

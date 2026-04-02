@@ -1,28 +1,101 @@
+/* 🌈 Background */
 body {
-    font-family: Arial;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
 }
+
+/* 📦 Container Card */
 .container {
-    width: 320px;
-    margin: 100px auto;
-    padding: 30px;
     background: white;
-    border-radius: 10px;
+    padding: 35px;
+    border-radius: 15px;
+    width: 320px;
     text-align: center;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.25);
+    animation: fadeIn 0.6s ease-in-out;
 }
+
+/* ✨ Heading */
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* 🧾 Inputs */
 input {
-    width: 90%;
-    padding: 10px;
+    width: 92%;
+    padding: 12px;
     margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: 0.3s;
+    font-size: 14px;
 }
+
+/* 🔵 Focus Effect */
+input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 5px rgba(102,126,234,0.5);
+}
+
+/* ❌ Invalid input */
+input:invalid {
+    border: 2px solid red;
+}
+
+/* 🔘 Button */
 button {
-    width: 100%;
-    padding: 10px;
-    background: #4facfe;
+    background: #667eea;
     color: white;
     border: none;
+    padding: 12px;
+    width: 95%;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.3s;
 }
-a {
-    display: block;
+
+/* Hover effect */
+button:hover {
+    background: #5a67d8;
+    transform: scale(1.03);
+}
+
+/* 🔴 Error message */
+.error {
+    color: red;
     margin-top: 10px;
+    font-weight: bold;
+}
+
+/* 🔗 Links */
+.link {
+    display: block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+/* ✨ Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>🎉 Welcome</h2>
+
+    <h3 style="color:#667eea;">{{ user }}</h3>
+
+    <p>You have successfully logged in ✅</p>
+
+    <hr style="margin:20px 0;">
+
+    <h4>🚀 Features</h4>
+
+    <div style="text-align:left; margin-top:10px;">
+        <p>✔ Secure Login System</p>
+        <p>✔ Password Hashing</p>
+        <p>✔ Session Management</p>
+        <p>✔ Mobile Validation</p>
+    </div>
+
+    <br>
+
+    <button onclick="showProfile()">👤 View Profile</button>
+
+    <br><br>
+
+    <a href="/logout">
+        <button style="background:#e53e3e;">Logout</button>
+    </a>
+
+</div>
+
+<script>
+function showProfile() {
+    alert("User: {{ user }}");
+}
+</script>
+
+</body>
+</html>
