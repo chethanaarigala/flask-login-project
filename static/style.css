@@ -1,101 +1,45 @@
-/* 🌈 Background */
+/* RESET */
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     margin: 0;
+    font-family: Arial;
 }
 
-/* 📦 Container Card */
+/* LOGIN & REGISTER ONLY */
 .container {
+    width: 300px;
+    margin: 100px auto;
     background: white;
-    padding: 35px;
-    border-radius: 15px;
-    width: 320px;
+    padding: 25px;
+    border-radius: 10px;
     text-align: center;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.25);
-    animation: fadeIn 0.6s ease-in-out;
+    box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
 }
 
-/* ✨ Heading */
-h2 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-/* 🧾 Inputs */
+/* INPUTS */
 input {
-    width: 92%;
-    padding: 12px;
+    width: 90%;
+    padding: 10px;
     margin: 10px 0;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #ccc;
-    transition: 0.3s;
-    font-size: 14px;
 }
 
-/* 🔵 Focus Effect */
-input:focus {
-    border-color: #667eea;
-    outline: none;
-    box-shadow: 0 0 5px rgba(102,126,234,0.5);
-}
-
-/* ❌ Invalid input */
+/* INVALID INPUT */
 input:invalid {
     border: 2px solid red;
 }
 
-/* 🔘 Button */
+/* BUTTON */
 button {
     background: #667eea;
     color: white;
     border: none;
-    padding: 12px;
+    padding: 10px;
     width: 95%;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 15px;
-    transition: 0.3s;
 }
 
-/* Hover effect */
 button:hover {
     background: #5a67d8;
-    transform: scale(1.03);
-}
-
-/* 🔴 Error message */
-.error {
-    color: red;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-/* 🔗 Links */
-.link {
-    display: block;
-    margin-top: 15px;
-    text-decoration: none;
-    color: #667eea;
-    font-weight: bold;
-}
-
-.link:hover {
-    text-decoration: underline;
-}
-
-/* ✨ Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
