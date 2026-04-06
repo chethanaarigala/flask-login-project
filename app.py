@@ -8,41 +8,71 @@ import re
 app = Flask(__name__)
 app.secret_key = 'mysecretkey'
 
-# DATABASE PATH (works local + Render)
+# DATABASE PATH
 DB_PATH = 'users.db'
 if os.environ.get('RENDER'):
     DB_PATH = '/tmp/users.db'
 
-# UPLOAD CONFIG
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-
-# DATABASE CONNECTION
+# database
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-# CREATE DATABASE
 def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS users(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mobile TEXT UNIQUE,
-            password TEXT,
-            profile_pic TEXT
-        )
-    ''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mobile TEXT UNIQUE,
+        password TEXT,
+        profile_pic TEXT
+    )''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS posts(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_mobile TEXT,
+        image TEXT,
+        caption TEXT
+    )''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS comments(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER,
+        user_mobile TEXT,
+        comment TEXT
+    )''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS likes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER,
+        user_mobile TEXT
+    )''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS follows(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        follower TEXT,
+        following TEXT
+    )''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS notifications(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_mobile TEXT,
+        message TEXT
+    )''')
+
     conn.commit()
     conn.close()
 
 init_db()
 
-# REGISTER
+
+# register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     message = ""
@@ -51,51 +81,39 @@ def register():
         mobile = request.form['mobile'].strip()
         password = request.form['password'].strip()
 
-        # VALIDATION
         if not re.fullmatch(r'[6-9][0-9]{9}', mobile):
-            message = "Enter valid 10-digit mobile number ❌"
-            return render_template('register.html', message=message)
+            return render_template('register.html', message="Invalid mobile ❌")
 
         if len(password) < 4:
-            message = "Password must be at least 4 characters ❌"
-            return render_template('register.html', message=message)
-
-        hashed_password = generate_password_hash(password)
+            return render_template('register.html', message="Password too short ❌")
 
         try:
             conn = get_db_connection()
             cur = conn.cursor()
 
-            default_pic = 'default.png'
-
             cur.execute(
-                "INSERT INTO users (mobile, password, profile_pic) VALUES (?, ?, ?)",
-                (mobile, hashed_password, default_pic)
+                "INSERT INTO users VALUES (NULL,?,?,?)",
+                (mobile, generate_password_hash(password), 'default.png')
             )
 
             conn.commit()
             conn.close()
 
-            message = "Registration Successful ✅"
-
-        except sqlite3.IntegrityError:
-            message = "Mobile already registered ❌"
+            message = "Registered ✅"
+        except:
+            message = "User already exists ❌"
 
     return render_template('register.html', message=message)
 
 
-# LOGIN
+# login
 @app.route('/', methods=['GET', 'POST'])
 def login():
     message = ""
 
     if request.method == 'POST':
-        mobile = request.form['mobile'].strip()
-        password = request.form['password'].strip()
-
-        if not re.fullmatch(r'[6-9][0-9]{9}', mobile):
-            message = "Invalid Mobile Format ❌"
-            return render_template('login.html', message=message)
+        mobile = request.form['mobile']
+        password = request.form['password']
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -107,13 +125,12 @@ def login():
             session['user'] = mobile
             return redirect('/home')
         else:
-            message = "Invalid Details ❌"
+            message = "Invalid login ❌"
 
     return render_template('login.html', message=message)
 
 
-
-# HOME (DASHBOARD)
+# home
 @app.route('/home')
 def home():
     if 'user' not in session:
@@ -125,14 +142,10 @@ def home():
     user = cur.fetchone()
     conn.close()
 
-    return render_template(
-        'home.html',
-        user=user['mobile'],
-        profile_pic=user['profile_pic']
-    )
+    return render_template('home.html', user=user['mobile'], profile_pic=user['profile_pic'])
 
 
-# PROFILE
+#proflie
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if 'user' not in session:
@@ -146,14 +159,10 @@ def profile():
 
         if file and file.filename != '':
             filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            cur.execute(
-                "UPDATE users SET profile_pic=? WHERE mobile=?",
-                (filename, session['user'])
-            )
+            cur.execute("UPDATE users SET profile_pic=? WHERE mobile=?",
+                        (filename, session['user']))
             conn.commit()
 
     cur.execute("SELECT * FROM users WHERE mobile=?", (session['user'],))
@@ -163,33 +172,160 @@ def profile():
     return render_template('profile.html', user=user)
 
 
-# EXPLORE (UPGRADED UI PAGE)
+# explore
 @app.route('/explore')
 def explore():
     if 'user' not in session:
         return redirect('/')
 
-    return render_template('explore.html')
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM posts ORDER BY id DESC")
+    posts = cur.fetchall()
+
+    post_data = []
+
+    for p in posts:
+        cur.execute("SELECT * FROM comments WHERE post_id=?", (p['id'],))
+        comments = cur.fetchall()
+
+        cur.execute("SELECT COUNT(*) as count FROM likes WHERE post_id=?", (p['id'],))
+        likes = cur.fetchone()['count']
+
+        post_data.append({
+            "post": p,
+            "comments": comments,
+            "likes": likes
+        })
+
+    conn.close()
+
+    return render_template('explore.html', posts=post_data)
 
 
-# SETTINGS
-@app.route('/settings')
-def settings():
+#upload post
+@app.route('/upload_post', methods=['POST'])
+def upload_post():
     if 'user' not in session:
         return redirect('/')
 
-    return render_template('settings.html')
+    file = request.files.get('image')
+    caption = request.form.get('caption')
+
+    if file and file.filename != '':
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("INSERT INTO posts VALUES (NULL,?,?,?)",
+                    (session['user'], filename, caption))
+
+        conn.commit()
+        conn.close()
+
+    return redirect('/explore')
 
 
+# comment
+@app.route('/comment', methods=['POST'])
+def comment():
+    if 'user' not in session:
+        return redirect('/')
 
-# LOGOUT
+    post_id = request.form['post_id']
+    comment = request.form['comment']
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO comments VALUES (NULL,?,?,?)",
+                (post_id, session['user'], comment))
+
+    cur.execute("SELECT user_mobile FROM posts WHERE id=?", (post_id,))
+    owner = cur.fetchone()['user_mobile']
+
+    if owner != session['user']:
+        cur.execute("INSERT INTO notifications VALUES (NULL,?,?)",
+                    (owner, f"{session['user']} commented on your post"))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/explore')
+
+
+# like
+@app.route('/like/<int:post_id>')
+def like(post_id):
+    if 'user' not in session:
+        return redirect('/')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM likes WHERE post_id=? AND user_mobile=?",
+                (post_id, session['user']))
+    exists = cur.fetchone()
+
+    if exists:
+        cur.execute("DELETE FROM likes WHERE post_id=? AND user_mobile=?",
+                    (post_id, session['user']))
+    else:
+        cur.execute("INSERT INTO likes VALUES (NULL,?,?)",
+                    (post_id, session['user']))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/explore')
+
+
+# follow
+@app.route('/follow/<user>')
+def follow(user):
+    if 'user' not in session:
+        return redirect('/')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO follows VALUES (NULL,?,?)",
+                (session['user'], user))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/explore')
+
+
+# notifications
+@app.route('/notifications')
+def notifications():
+    if 'user' not in session:
+        return redirect('/')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM notifications WHERE user_mobile=?",
+                (session['user'],))
+    data = cur.fetchall()
+
+    conn.close()
+
+    return render_template('notifications.html', data=data)
+
+
+# logout
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
+    session.clear()
     return redirect('/')
 
 
-
-# RUN APP
+# Run
 if __name__ == '__main__':
     app.run(debug=True)
