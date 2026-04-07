@@ -318,6 +318,13 @@ def notifications():
 
     return render_template('notifications.html', data=data)
 
+# settings
+@app.route('/settings')
+def settings():
+    if 'user' not in session:
+        return redirect('/')
+    return render_template('settings.html')
+
 
 # logout
 @app.route('/logout')
@@ -327,5 +334,7 @@ def logout():
 
 
 # Run
+#if __name__ == '__main__':
+    #app.run(debug=True)
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=10000)
